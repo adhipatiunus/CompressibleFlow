@@ -10,18 +10,6 @@ from generate_particles import generate_particle_singular, generate_particle_mul
 from neighbor_search import neighbor_search_cell_list
 import numpy as np
 
-x_min, x_max, y_min, y_max = 0, 10, 0, 10
-R = 1
-x_center, y_center = 5, 5
-sigma = 0.5
-R_e = 3.5
-cell_size = R_e * sigma
-
-particle = generate_particle_multires(x_min, x_max, y_min, y_max,
-                            x_center, y_center, R, sigma)
-
-neighbor_search_cell_list(particle, cell_size, x_max, x_min, y_max, y_min)
-
 def LSMPS(particle, R_e, typ):
     if typ == 'x':
         EtaDxPos, EtaDxxPos = calculate_derivative(particle, R_e, particle.neighbor_xpos, 'x')
@@ -32,7 +20,7 @@ def LSMPS(particle, R_e, typ):
         EtaDyNeg, EtaDyyNeg = calculate_derivative(particle, R_e, particle.neighbor_yneg, 'y')
         return EtaDyPos, EtaDyyPos, EtaDyNeg, EtaDyyNeg
     if typ == 'all':
-        EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll, index_all = calculate_derivative(particle, R_e, particle.neighbor_all, 'all')
+        EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll = calculate_derivative(particle, R_e, particle.neighbor_all, 'all')
         return EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll
     
     
@@ -46,51 +34,61 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
     EtaDyy  = np.zeros((N, N))
     index   = np.zeros((N, N))
     
-    index_inner = [particle.index[i] for i in range(len(particle.x)) if particle.boundary[i] == False]
+    if typ == 'x' or typ == 'y':
+        index_lsmps = [particle.index[i] for i in range(len(particle.x)) if particle.boundary[i] == False]
+    else:
+        index_lsmps = particle.index
+     
+    #index_lsmps = particle.index
 
-    for i in index_inner:
+    for i in index_lsmps:
         H_rs = np.zeros((6,6))
         M = np.zeros((6,6))
         P = np.zeros((6,1))
         b_temp = [np.array([])] * len(neighbor_list[i])
-        #print(i)
         
-        #print(i)
+        print('Calculating derivative for particle ' + str(i) + '/' + str(N))
         
-        Li = particle.diameter[i]
+        neighbor_idx = neighbor_list[i]
+        """
+        idx_begin = neighbor_idx[0]
+        idx_end = neighbor_idx[-1]
+        Li = np.average(particle.diameter[idx_begin:idx_end])
+        """
+        Li = 0
         
+        for j in range(len(neighbor_idx)):
+            Li += particle.diameter[j]
+            
+        Li = Li / len(neighbor_idx)
+        
+        idx_i = i
+        x_i = particle.x[idx_i]
+        y_i = particle.y[idx_i]
+        R_i = R_e * Li
+                
         H_rs[0, 0] = 1
         H_rs[1, 1] = Li**-1
         H_rs[2, 2] = Li**-1
         H_rs[3, 3] = 2 * Li**-2
         H_rs[4, 4] = Li**-2
         H_rs[5, 5] = 2 * Li**2
-        
-        neighbor_idx = neighbor_list[i]
-        
-        idx_i = i
-        x_i = particle.x[idx_i]
-        y_i = particle.y[idx_i]
-        R_i = particle.diameter[idx_i]
-        
+                
         for j in range(len(neighbor_idx)):
             idx_j = neighbor_idx[j]
             x_j = particle.x[idx_j]
             y_j = particle.y[idx_j]
-            R_j = particle.diameter[idx_j]
+            R_j = R_e * particle.diameter[idx_j]
             
-            R_ij = R_e * (R_i + R_j) / 2
+            R_ij = (R_i + R_j) / 2
             x_ij = x_j - x_i
             y_ij = y_j - y_i
             r_ij = np.sqrt((x_ij)**2 + (y_ij)**2)
             
-            if r_ij < R_ij:
-                w_ij = (r_ij / R_ij - 1)**2
-            else:
-                w_ij = 0
+            w_ij = (r_ij / R_ij - 1)**2
              
-            p_x = x_ij / R_i
-            p_y = y_ij / R_i
+            p_x = x_ij / Li
+            p_y = y_ij / Li
             
             P[0, 0] = 1.0
             P[1, 0] = p_x
@@ -99,14 +97,11 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
             P[4, 0] = p_x * p_y
             P[5, 0] = p_y**2
             
-            M = M + w_ij * np.matmul(P, P.transpose())
+            M = M + w_ij * np.matmul(P, P.T)
             b_temp[j] = w_ij * P
         #print(M)
-        try:
-            M_inv = np.linalg.inv(M)
-        except:
-            M_inv = M
-        MinvHrs = H_rs * M_inv
+        M_inv = np.linalg.inv(M)
+        MinvHrs = np.matmul(H_rs, M_inv)
         b_data[i] = b_temp
         
         for j in range(len(neighbor_idx)):
@@ -132,9 +127,10 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
 #rho = 1.225
 #dt = 0.1
 #LHS = 3 * rho / (2 * dt) * np.eye(N) 
-EtaDxPos, EtaDxxPos, EtaDxNeg, EtaDxxNeg = LSMPS(particle, R_e, 'x')
+#EtaDxPos, EtaDxxPos, EtaDxNeg, EtaDxxNeg = LSMPS(particle, R_e, 'x')
+#np.savetxt('EtaDxPos.csv', EtaDxPos)
         
-        
+      
 
 
 

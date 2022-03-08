@@ -8,12 +8,12 @@ Created on Wed Feb  2 13:15:05 2022
 
 import numpy as np
 
-def neighbor_search_naive(particle, R_e):
+def neighbor_search_naive(particle, cell_size):
     N = len(particle.index)
     particle.neighbor = [[] for i in range(N)]
     for i in range(N):
         for j in range(N):
-            if distance(particle.x[i], particle.x[j], particle.y[i], particle.y[j]) < R_e:
+            if distance(particle.x[i], particle.x[j], particle.y[i], particle.y[j]) < cell_size:
                 particle.neighbor[i].append(particle.index[j])
                 
 def neighbor_search_cell_list(particle, cell_size, y_max, y_min, x_max, x_min):
@@ -68,44 +68,24 @@ def neighbor_search_cell_list(particle, cell_size, y_max, y_min, x_max, x_min):
                 push_back_particle(particle, cell_size, cell, pi, neigh_row, neigh_col, nrows, ncols)
                 print(str(pcnt/N*100)+'%')
                 pcnt += 1
+    print(str(pcnt/N*100)+'%')
                             
 def push_back_particle(particle, cell_size, cell, pi, neigh_row, neigh_col, nrows, ncols):
     if neigh_row >= 0 and neigh_col >= 0 and neigh_row < nrows and neigh_col < ncols:
         for pj in cell[neigh_row][neigh_col]:
-            if distance(particle.x[pi], particle.x[pj], particle.y[pi], particle.y[pj]) < cell_size:
+            if distance(particle.x[pi], particle.x[pj], particle.y[pi], particle.y[pj]) < cell_size and pi != pj:
                 x_ij = particle.x[pi] - particle.x[pj]
                 y_ij = particle.y[pi] - particle.y[pj]
-                if x_ij < 0:
+                if x_ij < 10**-6:
                     particle.neighbor_xpos[pi].append(pj)
-                elif x_ij > 0:
+                elif x_ij > -10**-6:
                     particle.neighbor_xneg[pi].append(pj)
-                if y_ij < 0:
+                if y_ij < 10**-6:
                     particle.neighbor_ypos[pi].append(pj)
-                elif y_ij > 0:
+                elif y_ij > -10**-6:
                     particle.neighbor_yneg[pi].append(pj)
                 particle.neighbor_all[pi].append(pj)
                     
 def distance(x1, x2, y1, y2):
     return np.sqrt((x1 - x2)**2 + (y1 - y2)**2)
-
-from generate_particles import generate_particle_singular
-import matplotlib.pyplot as plt
-import numpy as np
-
-"""
-x_min, x_max, y_min, y_max = 0, 10, 0, 10
-R = 2
-x_center, y_center = 5, 5
-sigma = 1
-R_e = 5 * sigma
-
-particle_fast = generate_particle_singular(x_min, x_max, y_min, y_max,
-                            x_center, y_center, R, sigma)
-particle_naive = generate_particle_singular(x_min, x_max, y_min, y_max,
-                            x_center, y_center, R, sigma)
-
-neighbor_search_naive(particle_naive, R_e)
-neighbor_search_cell_list(particle_fast, R_e)
-"""
-
 

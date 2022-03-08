@@ -20,4 +20,9 @@ class Particle:
         self.neighbor_xneg = []
         self.neighbor_ypos = []
         self.neighbor_yneg = []
+        self.u = np.array([])
+        self.v = np.array([])
+        self.T = np.array([])
+        self.p = np.array([])
+        self.rho = np.array([])
         

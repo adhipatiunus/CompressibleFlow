@@ -210,11 +210,12 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     particle.diameter = np.concatenate((particle.diameter, sp))
 
     # Intermediate Particle
-    h = h4 * sigma
-    xmin = x_center - 2 * R
-    xmax = x_center + 2 * R
-    ymin = y_center - 2 * R
-    ymax = y_center + 2 * R
+    h = h3 * sigma
+    n_layer = 4;
+    xmin = x_center - R_out - n_layer * h
+    xmax = x_center + R_out + n_layer * h
+    ymin = y_center - R_out - n_layer * h
+    ymax = y_center + R_out + n_layer * h
 
     lx_ = xmax - xmin
     ly_ = ymax - ymin
@@ -232,6 +233,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
 
     delete_inner = (node_x - x_center)**2 + (node_y - y_center)**2 <= R_out**2
     node_x = node_x[~delete_inner]
+    #print(node_x)
     node_y = node_y[~delete_inner]
     sp = h * np.ones_like(node_x)
 
@@ -245,13 +247,13 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     y_min_inner = ymin
     y_max_inner = ymax
     
-    n_layer = 4
-
-    h = h4 * sigma
-    xmin = x_min + h
-    xmax = x_max - h
-    ymin = y_min + h
-    ymax = y_max - h
+    n_layer = 16
+    
+    h = h3 * sigma
+    xmin = x_min + h2
+    xmax = x_max - h2
+    ymin = y_min + h2
+    ymax = y_max - h2
 
     nx = int(lx_ / h) + 1
     ny = int(ly_ / h) + 1
@@ -279,5 +281,6 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     particle.boundary[:n_boundary] = True
     particle.solid = np.full(N, False)
     particle.solid[n_boundary:n_sphere] = True
+    
     
     return particle, n_boundary

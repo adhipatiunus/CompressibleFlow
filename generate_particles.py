@@ -61,10 +61,10 @@ def generate_particle_singular(x_min, x_max, y_min, y_max, x_center, y_center, R
     return particle, n_boundary
 
 def generate_node_spherical(x_center, y_center, R, R_in, R_out, h):
-    x_min = x_center - 2 * R
-    x_max = x_center + 2 * R
-    y_min = y_center - 2 * R
-    y_max = y_center + 2 * R
+    x_min = x_center - 2 * R_out
+    x_max = x_center + 2 * R_out
+    y_min = y_center - 2 * R_out
+    y_max = y_center + 2 * R_out
     
     lx = x_max - x_min
     ly = y_max - y_min
@@ -98,7 +98,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     h5 = 1/4 
     h6 = 1/2  
 
-    h = h2 * sigma
+    h = h1 * sigma
     lx = x_max - x_min
     ly = y_max - y_min
 
@@ -177,7 +177,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     particle.diameter = np.concatenate((particle.diameter, sp))
     
     n_sphere = len(particle.x)
-
+    
     # Outside Sphere
     n_layer = 4
     h = h1 * sigma
@@ -208,7 +208,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     particle.x = np.concatenate((particle.x, node_x))
     particle.y = np.concatenate((particle.y, node_y))
     particle.diameter = np.concatenate((particle.diameter, sp))
-
+    
     # Intermediate Particle
     h = h3 * sigma
     n_layer = 4;
@@ -249,11 +249,14 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     
     n_layer = 16
     
-    h = h3 * sigma
-    xmin = x_min + h2
-    xmax = x_max - h2
-    ymin = y_min + h2
-    ymax = y_max - h2
+    h = h4 * sigma
+    xmin = x_min + h
+    xmax = x_max - h
+    ymin = y_min + h
+    ymax = y_max - h
+    
+    lx_ = xmax - xmin
+    ly_ = ymax - ymin
 
     nx = int(lx_ / h) + 1
     ny = int(ly_ / h) + 1

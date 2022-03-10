@@ -15,12 +15,14 @@ import numpy as np
 x_min, x_max, y_min, y_max = 0, 10, 0, 10
 R = 0.5
 x_center, y_center = 5, 5
-sigma = 1.0
-R_e = 3.5
+sigma = 1
+R_e = 6.325
 cell_size = R_e * sigma
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max,
                             x_center, y_center, R, sigma)
+
+#particle, n_boundary = generate_particle_singular(x_min, x_max, y_min, y_max, x_center, y_center, R, sigma)
 #%%
 neighbor_search_cell_list(particle, cell_size, y_max, y_min, x_max, x_min)
 
@@ -45,6 +47,7 @@ omega = 0
 t = 0
 t_end = 10
 dt = 5*10**-4
+#%%
 
 EtaDxPos, EtaDxxPos, EtaDxNeg, EtaDxxNeg = LSMPS(particle, R_e, 'x')
 EtaDyPos, EtaDyyPos, EtaDyNeg, EtaDyyNeg = LSMPS(particle, R_e, 'y')

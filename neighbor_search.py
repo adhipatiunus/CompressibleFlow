@@ -10,15 +10,32 @@ import numpy as np
 
 def neighbor_search_naive(particle, cell_size):
     N = len(particle.index)
-    particle.neighbor = [[] for i in range(N)]
+    particle.neighbor_all   = [[] for i in range(N)]
+    particle.neighbor_xpos  = [[] for i in range(N)]
+    particle.neighbor_xneg  = [[] for i in range(N)]
+    particle.neighbor_ypos  = [[] for i in range(N)]
+    particle.neighbor_yneg  = [[] for i in range(N)]
     for i in range(N):
+        print(str(i/N*100)+'%')
         for j in range(N):
             if distance(particle.x[i], particle.x[j], particle.y[i], particle.y[j]) < cell_size:
-                particle.neighbor[i].append(particle.index[j])
+                x_ij = particle.x[i] - particle.x[j]
+                y_ij = particle.y[i] - particle.y[j]
+                if x_ij < 10**-6:
+                    particle.neighbor_xpos[i].append(j)
+                elif x_ij > -10**-6:
+                    particle.neighbor_xneg[i].append(j)
+                if y_ij < 10**-6:
+                    particle.neighbor_ypos[i].append(j)
+                elif y_ij > -10**-6:
+                    particle.neighbor_yneg[i].append(j)
+                particle.neighbor_all[i].append(j)
                 
 def neighbor_search_cell_list(particle, cell_size, y_max, y_min, x_max, x_min):
     nrows = int((y_max - y_min) / cell_size) + 1
     ncols = int((x_max - x_min) / cell_size) + 1
+    #print(cell_size)
+    #print(nrows)
 
     cell = [[[] for i in range(ncols)] for j in range(nrows)]
 
@@ -27,6 +44,7 @@ def neighbor_search_cell_list(particle, cell_size, y_max, y_min, x_max, x_min):
     for i in range(N):
         listx = int((particle.x[i] - x_min) / cell_size)
         listy = int((particle.y[i] - y_min) / cell_size)
+        #print(particle.x[i])
         cell[listx][listy].append(particle.index[i])
         
     particle.neighbor_all   = [[] for i in range(N)]

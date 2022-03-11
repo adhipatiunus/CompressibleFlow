@@ -12,12 +12,13 @@ from LSMPS import LSMPS
 import matplotlib.pyplot as plt
 import numpy as np
 
-x_min, x_max, y_min, y_max = 0, 10, 0, 10
+x_min, x_max, y_min, y_max = 0, 5, 0, 5
 R = 0.5
-x_center, y_center = 5, 5
+x_center, y_center = 2.5, 2.5
 sigma = 1
-R_e = 6.325
-cell_size = R_e * sigma
+R_e1 = 5.0
+R_e2 = 3.1
+cell_size = R_e1 * sigma
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max,
                             x_center, y_center, R, sigma)
@@ -49,9 +50,9 @@ t_end = 10
 dt = 5*10**-4
 #%%
 
-EtaDxPos, EtaDxxPos, EtaDxNeg, EtaDxxNeg = LSMPS(particle, R_e, 'x')
-EtaDyPos, EtaDyyPos, EtaDyNeg, EtaDyyNeg = LSMPS(particle, R_e, 'y')
-EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll = LSMPS(particle, R_e, 'all')
+EtaDxPos, EtaDxxPos, EtaDxNeg, EtaDxxNeg = LSMPS(particle, R_e1, 'x')
+EtaDyPos, EtaDyyPos, EtaDyNeg, EtaDyyNeg = LSMPS(particle, R_e1, 'y')
+EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll = LSMPS(particle, R_e2, 'all')
 #%%
 
 dx_2d_pos = EtaDxPos.copy()

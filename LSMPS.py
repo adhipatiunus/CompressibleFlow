@@ -33,13 +33,15 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
     EtaDxy  = np.zeros((N, N))
     EtaDyy  = np.zeros((N, N))
     index   = np.zeros((N, N))
-    
+    """
     if typ == 'x' or typ == 'y':
         index_lsmps = [particle.index[i] for i in range(len(particle.x)) if particle.boundary[i] == False]
     else:
         index_lsmps = particle.index
      
     #index_lsmps = particle.index
+    """
+    index_lsmps = [particle.index[i] for i in range(len(particle.x)) if particle.boundary[i] == False]
 
     for i in index_lsmps:
         H_rs = np.zeros((6,6))
@@ -84,8 +86,6 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
             x_ij = x_j - x_i
             y_ij = y_j - y_i
             r_ij = np.sqrt((x_ij)**2 + (y_ij)**2)
-            
-            w_ij = (r_ij / R_ij - 1)**2
              
             p_x = x_ij / Li
             p_y = y_ij / Li
@@ -97,9 +97,12 @@ def calculate_derivative(particle, R_e, neighbor_list, typ):
             P[4, 0] = p_x * p_y
             P[5, 0] = p_y**2
             
+            if r_ij < R_ij:
+                w_ij = (1 - r_ij/R_ij)**2
+            else:
+                w_ij = 0
             M = M + w_ij * np.matmul(P, P.T)
             b_temp[j] = w_ij * P
-        #print(M)
         M_inv = np.linalg.inv(M)
         MinvHrs = np.matmul(H_rs, M_inv)
         b_data[i] = b_temp

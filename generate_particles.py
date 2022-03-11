@@ -232,9 +232,11 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     node_y = Y.flatten()
 
     delete_inner = (node_x - x_center)**2 + (node_y - y_center)**2 <= R_out**2
-    node_x = node_x[~delete_inner]
+    delete_outer = (node_x < x_min) + (node_x > x_max) +  (node_y < y_min) + (node_y > y_max)
+    delete = delete_inner + delete_outer
+    node_x = node_x[~delete]
     #print(node_x)
-    node_y = node_y[~delete_inner]
+    node_y = node_y[~delete]
     sp = h * np.ones_like(node_x)
 
     particle.x = np.concatenate((particle.x, node_x))

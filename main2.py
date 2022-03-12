@@ -11,14 +11,15 @@ from neighbor_search import neighbor_search_cell_list
 from LSMPS import LSMPS
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
 
 x_min, x_max, y_min, y_max = 0, 10, 0, 10
 R = 0.5
 x_center, y_center = 5.0, 5.0
 sigma = 1
-R_e1 = 1.0
-R_e2 = 1.0
-cell_size = R_e1 * sigma
+R_e1 = 2.1
+R_e2 = 2.1
+cell_size = R_e1 * (sigma / 2)
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max,
                             x_center, y_center, R, sigma)
@@ -252,8 +253,8 @@ RHS_T = rho * C_p * T / dt \
         + tau_yy * np.matmul(dy_2d_all, v_corr) \
         - p_corr * (np.matmul(dx_2d_all, u_corr) + np.matmul(dy_2d_all, v_corr)) \
         - get_brinkman_penalization_temperature(particle, eta, n_boundary, n_total, T, T_obs) \
-        - np.matmul((dxx_2d_all.T * k).T, T) \
-        - np.matmul((dyy_2d_all.T * k).T, T)
+        + np.matmul((dxx_2d_all.T * k).T, T) \
+        + np.matmul((dyy_2d_all.T * k).T, T)
         
 T_corr = np.linalg.solve(LHS_T, RHS_T)
 T_corr[:n_boundary] = T_bound
@@ -376,12 +377,15 @@ while(t < t_end):
             + tau_yy * np.matmul(dy_2d_all, v_corr) \
             - p_corr * (np.matmul(dx_2d_all, u_corr) + np.matmul(dy_2d_all, v_corr)) \
             - get_brinkman_penalization_temperature(particle, eta, n_boundary, n_total, T, T_obs) \
-            - np.matmul((dxx_2d_all.T * k).T, T) \
-            - np.matmul((dyy_2d_all.T * k).T, T)
+            + np.matmul((dxx_2d_all.T * k).T, T) \
+            + np.matmul((dyy_2d_all.T * k).T, T)
             
     T_corr = np.linalg.solve(LHS_T, RHS_T)
     
     T_corr[:n_boundary] = T_bound
+
+    if min(T_corr) <= 0:
+        sys.exit()
     
     u_prev = u
     v_prev = v

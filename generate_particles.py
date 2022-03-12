@@ -106,14 +106,14 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     ny = int(ly / h) + 1
 
     particle = Particle()
-    """
+    
     # West Boundary
     y_west = np.linspace(y_min, y_max, ny)
     x_west = np.linspace(x_min, x_min + h, 2)
     X_west, Y_west = np.meshgrid(x_west, y_west)
     X_west = X_west.flatten()
     Y_west = Y_west.flatten()
-    sp_west = sigma * np.ones_like(X_west)
+    sp_west = h * np.ones_like(X_west)
 
     # East Boundary
     y_east = np.linspace(y_min, y_max, ny)
@@ -121,7 +121,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     X_east, Y_east = np.meshgrid(x_east, y_east)
     X_east = X_east.flatten()
     Y_east = Y_east.flatten()
-    sp_east = sigma * np.ones_like(X_east)
+    sp_east = h * np.ones_like(X_east)
 
     # North Boundary
     x_north = np.linspace(x_min + 2 * h, x_max - 2 * h, nx - 4)
@@ -129,7 +129,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     X_north, Y_north = np.meshgrid(x_north, y_north)
     X_north = X_north.flatten()
     Y_north = Y_north.flatten()
-    sp_north = sigma * np.ones_like(X_north)
+    sp_north = h * np.ones_like(X_north)
 
     # South Boundary
     x_south = np.linspace(x_min + 2 * h, x_max - 2 * h, nx - 4)
@@ -137,7 +137,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     X_south, Y_south = np.meshgrid(x_south, y_south)
     X_south = X_south.flatten()
     Y_south = Y_south.flatten()
-    sp_south = sigma * np.ones_like(X_south)
+    sp_south = h * np.ones_like(X_south)
 
     particle.x = np.concatenate((X_west, X_east, X_north, X_south))
     particle.y = np.concatenate((Y_west, Y_east, Y_north, Y_south))
@@ -161,16 +161,16 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
     x_south = np.linspace(x_min + h, x_max - h, nx - 2)
     y_south = y_max * np.ones_like(x_south)
     sp_south = h * np.ones_like(x_south)
-
-    particle.x = np.concatenate((x_west, x_east, x_north, x_south))
-    particle.y = np.concatenate((y_west, y_east, y_north, y_south))
+    """
+    particle.x = np.concatenate((X_west, X_east, X_north, X_south))
+    particle.y = np.concatenate((Y_west, Y_east, Y_north, Y_south))
     particle.diameter = np.concatenate((sp_west, sp_east, sp_north, sp_south))
     n_boundary = len(particle.x)
 
     # Inside Sphere
     R_in = 0
     R_out = R / 4
-    h = h5 * sigma
+    h = h3 * sigma
 
     node_x, node_y, sp = generate_node_spherical(x_center, y_center, R, R_in, R_out, h)
 
@@ -180,7 +180,7 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
 
     R_in = R_out
     R_out = R / 2
-    h = h4 * sigma
+    h = h3 * sigma
     node_x, node_y, sp = generate_node_spherical(x_center, y_center, R, R_in, R_out, h)
 
     particle.x = np.concatenate((particle.x, node_x))

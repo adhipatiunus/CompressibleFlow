@@ -109,26 +109,38 @@ def generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R
 
     # West Boundary
     y_west = np.linspace(y_min, y_max, ny)
-    x_west = x_min * np.ones_like(y_west)
-    sp_west = sigma * np.ones_like(y_west)
+    x_west = np.linspace(x_min, x_min + h, 2)
+    X_west, Y_west = np.meshgrid(x_west, y_west)
+    X_west = X_west.flatten()
+    Y_west = Y_west.flatten()
+    sp_west = sigma * np.ones_like(X_west)
 
     # East Boundary
     y_east = np.linspace(y_min, y_max, ny)
-    x_east = x_max * np.ones_like(y_east)
-    sp_east = sigma * np.ones_like(y_east)
+    x_east = np.linspace(x_max, x_max - h, 2)
+    X_east, Y_east = np.meshgrid(x_east, y_east)
+    X_east = X_east.flatten()
+    Y_east = Y_east.flatten()
+    sp_east = sigma * np.ones_like(X_east)
 
     # North Boundary
-    x_north = np.linspace(x_min + h, x_max - h, nx - 2)
-    y_north = y_max * np.ones_like(x_north)
-    sp_north = sigma * np.ones_like(x_north)
+    x_north = np.linspace(x_min + 2 * h, x_max - 2 * h, nx - 4)
+    y_north = np.linspace(y_max, y_max - h, 2)
+    X_north, Y_north = np.meshgrid(x_north, y_north)
+    X_north = X_north.flatten()
+    Y_north = Y_north.flatten()
+    sp_north = sigma * np.ones_like(X_north)
 
     # South Boundary
-    x_south = np.linspace(x_min + h, x_max - h, nx - 2)
-    y_south = y_min * np.ones_like(x_south)
-    sp_south = sigma * np.ones_like(x_south)
+    x_south = np.linspace(x_min + 2 * h, x_max - 2 * h, nx - 4)
+    y_south = np.linspace(y_min, y_min + h, 2)
+    X_south, Y_south = np.meshgrid(x_south, y_south)
+    X_south = X_south.flatten()
+    Y_south = Y_south.flatten()
+    sp_south = sigma * np.ones_like(X_south)
 
-    particle.x = np.concatenate((x_west, x_east, x_north, x_south))
-    particle.y = np.concatenate((y_west, y_east, y_north, y_south))
+    particle.x = np.concatenate((X_west, X_east, X_north, X_south))
+    particle.y = np.concatenate((Y_west, Y_east, Y_north, Y_south))
     particle.diameter = np.concatenate((sp_west, sp_east, sp_north, sp_south))
     
     n_boundary = len(particle.x)

@@ -12,12 +12,12 @@ from LSMPS import LSMPS
 import matplotlib.pyplot as plt
 import numpy as np
 
-x_min, x_max, y_min, y_max = 0, 5, 0, 5
+x_min, x_max, y_min, y_max = 0, 10, 0, 10
 R = 0.5
-x_center, y_center = 2.5, 2.5
+x_center, y_center = 5.0, 5.0
 sigma = 1
-R_e1 = 5.0
-R_e2 = 3.1
+R_e1 = 1.0
+R_e2 = 1.0
 cell_size = R_e1 * sigma
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max,

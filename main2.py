@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Feb 17 20:29:29 2022
-
 @author: adhipatiunus
 """
 
@@ -17,12 +16,11 @@ x_min, x_max, y_min, y_max = 0, 10, 0, 10
 R = 0.5
 x_center, y_center = 5.0, 5.0
 sigma = 1
-R_e1 = 2.1
-R_e2 = 2.1
-cell_size = R_e1 * (sigma / 2)
+R_e1 = 3.5
+R_e2 = 3.5
+cell_size = R_e1 * sigma
 
-particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max,
-                            x_center, y_center, R, sigma)
+particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R, sigma)
 
 #particle, n_boundary = generate_particle_singular(x_min, x_max, y_min, y_max, x_center, y_center, R, sigma)
 #%%
@@ -126,18 +124,11 @@ mu = mu0 * (T / T0)**1.5 * (T0+110) / (T + 110)
 omega = 0
 k = mu * C_p / Pr
 
-
-# variable (n-1)
-u_prev = u.copy()
-v_prev = v.copy()
-p_prev = p.copy()
-T_prev = T.copy()
-rho_prev = rho.copy()
-
 u_bound = u[:n_boundary]
 v_bound = v[:n_boundary]
 T_bound = T[:n_boundary]
 p_bound = p[:n_boundary]
+rho_bound = rho[:n_boundary]
 
 # Matrix and vector
 A = np.zeros((n_total, n_total))
@@ -150,7 +141,7 @@ F = np.zeros(n_total)
 t = 0
 t_end = 10
 alpha_C = 0.1
-dt = min(alpha_C * particle.diameter / np.sqrt(u**2 + v**2))
+dt = 10**-5
 
 # Matrix A
 A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
@@ -230,6 +221,7 @@ rho_pred = rho + rho_change
 p_corr = p + p_change
 
 p_corr[:n_boundary] = p_bound
+rho_pred[:n_boundary] = rho_bound
 
 LHS_T = (np.eye(n_total).T * (rho_pred * C_p)).T / dt \
         + (dx_2d_neg.T * (rho_pred * C_p * np.maximum(u_corr,0))).T \
@@ -259,6 +251,9 @@ RHS_T = rho * C_p * T / dt \
 T_corr = np.linalg.solve(LHS_T, RHS_T)
 T_corr[:n_boundary] = T_bound
 
+rho_corr = p_corr / (R * T_corr)
+rho_corr[:n_boundary] = rho_bound 
+
 u_prev = u
 v_prev = v
 p_prev = p
@@ -269,7 +264,7 @@ u = u_corr
 v = v_corr
 p = p_corr
 T = T_corr
-rho = p / (R * T)
+rho = rho_corr
 
 i = 0
 
@@ -353,6 +348,7 @@ while(t < t_end):
     p_corr = p + p_change
     
     p_corr[:n_boundary] = p_bound
+    rho_pred[:n_boundary] = rho_bound
 
     LHS_T = 3 * (np.eye(n_total).T * (rho_pred * C_p)).T / (2 * dt) \
             + (dx_2d_neg.T * (rho_pred * C_p * np.maximum(u_corr,0))).T \
@@ -380,9 +376,11 @@ while(t < t_end):
             + np.matmul((dxx_2d_all.T * k).T, T) \
             + np.matmul((dyy_2d_all.T * k).T, T)
             
-    T_corr = np.linalg.solve(LHS_T, RHS_T)
-    
+    T_corr = np.linalg.solve(LHS_T, RHS_T)    
     T_corr[:n_boundary] = T_bound
+    
+    rho_corr = p_corr / (R * T_corr)
+    rho_corr[:n_boundary] = rho_bound 
 
     if min(T_corr) <= 0:
         sys.exit()
@@ -397,7 +395,7 @@ while(t < t_end):
     v = v_corr
     p = p_corr
     T = T_corr
-    rho = p / (R * T)
+    rho = rho_corr
     
     mu = mu0 * (T / T0)**1.5 * (T0+110) / (T + 110)
     k = mu * C_p / Pr
@@ -406,4 +404,4 @@ while(t < t_end):
     if i % 10==0:
         np.savez('File' + str(i/10) + '.npz', particle.x,particle.y,u,v,p,T)
     i += 1
-    dt = min(alpha_C * particle.diameter / np.sqrt(u**2 + v**2))
+    dt = 10**-5

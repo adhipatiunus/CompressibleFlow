@@ -402,6 +402,6 @@ while(t < t_end):
     
     t += dt
     if i % 10==0:
-        np.savez('File' + str(i/10) + '.npz', particle.x,particle.y,u,v,p,T)
+        np.savez('File' + str(i/10) + '.npz', particle.x,particle.y,u,v,p,T,rho)
     i += 1
     dt = 10**-5

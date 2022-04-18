@@ -18,7 +18,7 @@ x_center, y_center = 5.0, 5.0
 sigma = 1
 R_e1 = 3.1
 R_e2 = 3.1
-cell_size = 2.0
+cell_size = 3.1 * (sigma / 2)
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R, sigma)
 
@@ -142,7 +142,7 @@ F = np.zeros(n_total)
 t = 0
 t_end = 10
 alpha_C = 0.1
-dt = 10**-6
+dt = 10**-5
 
 # Matrix A
 A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
@@ -225,10 +225,8 @@ p_corr[:n_boundary] = p_bound
 rho_pred[:n_boundary] = rho_bound
 
 LHS_T = (np.eye(n_total).T * (rho_pred * C_p)).T / dt \
-        + (dx_2d_neg.T * (rho_pred * C_p * np.maximum(u_corr,0))).T \
-        + (dx_2d_pos.T * (rho_pred * C_p * np.minimum(u_corr,0))).T \
-        + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
-        + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
+        + (dx_2d_all.T * (rho_pred * C_p * np.maximum(u_corr,0))).T \
+        + (dy_2d_all.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
         - (dxx_2d_neg.T * k).T \
         - (dyy_2d_neg.T * k).T
         
@@ -353,8 +351,6 @@ while(t < t_end):
 
     LHS_T = 3 * (np.eye(n_total).T * (rho_pred * C_p)).T / (2 * dt) \
             + (dx_2d_neg.T * (rho_pred * C_p * np.maximum(u_corr,0))).T \
-            + (dx_2d_pos.T * (rho_pred * C_p * np.minimum(u_corr,0))).T \
-            + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
             + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
             - (dxx_2d_neg.T * k).T \
             - (dyy_2d_neg.T * k).T
@@ -406,4 +402,4 @@ while(t < t_end):
     if i % 10==0:
         np.savez('File' + str(i/10) + '.npz', particle.x,particle.y,u,v,p,T,rho)
     i += 1
-    dt = 10**-6
+    dt = 10**-5

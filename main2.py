@@ -154,7 +154,7 @@ A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
     - (dyy_2d_all.T * mu).T
     
 # Matrix B
-B = - 1.0 / 3.0 * dxy_2d_all
+B = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
 
 # Matrix C
 C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
@@ -162,7 +162,7 @@ C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
     - get_brinkman_penalization(particle, eta, omega, n_boundary, n_total, u)
 
 # Matrix D
-D = - 1.0 / 3.0 * dxy_2d_all
+D = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
 
 # Matrix D
 E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
@@ -279,7 +279,7 @@ while(t < t_end):
         - (dyy_2d_all.T * mu).T
         
     # Matrix B
-    B = - 1.0 / 3.0 * dxy_2d_all
+    B = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
 
     # Matrix C
     C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
@@ -287,7 +287,7 @@ while(t < t_end):
         - get_brinkman_penalization(particle, eta, omega, n_boundary, n_total, u)
 
     # Matrix D
-    D = - 1.0 / 3.0 * dxy_2d_all
+    D = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
 
     # Matrix D
     E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \

@@ -16,9 +16,9 @@ x_min, x_max, y_min, y_max = 0, 10, 0, 10
 R = 0.5
 x_center, y_center = 5.0, 5.0
 sigma = 1
-R_e1 = 3.5
-R_e2 = 3.5
-cell_size = R_e1 * sigma
+R_e1 = 3.1
+R_e2 = 3.1
+cell_size = 2.0
 
 particle, n_boundary = generate_particle_multires(x_min, x_max, y_min, y_max, x_center, y_center, R, sigma)
 
@@ -35,6 +35,7 @@ T0 = 288.15
 rho0 = 1.225
 mu0 = 1.789 * 10**-5
 eta = 10**-4
+eta_T = 10**-2
 
 T = T0 * np.ones(N)
 u = M0 * np.sqrt(gamma * R * T)
@@ -111,7 +112,7 @@ T0 = 288.15
 rho0 = 1.225
 mu0 = 1.789 * 10**-5
 eta = 10**-4
-C_p = gamma * R / (gamma - 1)
+C_p = R / (gamma - 1)
 Pr = 0.71
 T_obs = T0
 
@@ -141,7 +142,7 @@ F = np.zeros(n_total)
 t = 0
 t_end = 10
 alpha_C = 0.1
-dt = 10**-5
+dt = 10**-6
 
 # Matrix A
 A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
@@ -228,6 +229,8 @@ LHS_T = (np.eye(n_total).T * (rho_pred * C_p)).T / dt \
         + (dx_2d_pos.T * (rho_pred * C_p * np.minimum(u_corr,0))).T \
         + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
         + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
+        - (dxx_2d_neg.T * k).T \
+        - (dyy_2d_neg.T * k).T
         
 tau_xx = 2.0 / 3.0 * (2 * np.matmul((dx_2d_all.T * mu).T, u_corr)
                       - np.matmul((dy_2d_all.T * mu).T, v_corr))
@@ -244,10 +247,8 @@ RHS_T = rho * C_p * T / dt \
         + tau_xy * np.matmul(dx_2d_all, v_corr) \
         + tau_yy * np.matmul(dy_2d_all, v_corr) \
         - p_corr * (np.matmul(dx_2d_all, u_corr) + np.matmul(dy_2d_all, v_corr)) \
-        - get_brinkman_penalization_temperature(particle, eta, n_boundary, n_total, T, T_obs) \
-        + np.matmul((dxx_2d_all.T * k).T, T) \
-        + np.matmul((dyy_2d_all.T * k).T, T)
-        
+        - get_brinkman_penalization_temperature(particle, eta_T, n_boundary, n_total, T, T_obs)
+
 T_corr = np.linalg.solve(LHS_T, RHS_T)
 T_corr[:n_boundary] = T_bound
 
@@ -355,6 +356,9 @@ while(t < t_end):
             + (dx_2d_pos.T * (rho_pred * C_p * np.minimum(u_corr,0))).T \
             + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
             + (dy_2d_neg.T * (rho_pred * C_p * np.maximum(v_corr,0))).T \
+            - (dxx_2d_neg.T * k).T \
+            - (dyy_2d_neg.T * k).T
+
             
     tau_xx = 2.0 / 3.0 * (2 * np.matmul((dx_2d_all.T * mu).T, u_corr)
             - np.matmul((dy_2d_all.T * mu).T, v_corr))
@@ -365,16 +369,14 @@ while(t < t_end):
     tau_yy = 2.0 / 3.0 * (2 * np.matmul((dy_2d_all.T * mu).T, v_corr)
             - np.matmul((dx_2d_all.T * mu).T, u_corr))
             
-    RHS_T = 2 * rho * C_p * T / dt \
-            - rho_prev * C_p * T_prev / (2 * dt) \
+    RHS_T = 2 * rho_pred * C_p * T / dt \
+            - rho_pred * C_p * T_prev / (2 * dt) \
             + tau_xx * np.matmul(dx_2d_all, u_corr) \
             + tau_xy * np.matmul(dy_2d_all, u_corr) \
             + tau_xy * np.matmul(dx_2d_all, v_corr) \
             + tau_yy * np.matmul(dy_2d_all, v_corr) \
             - p_corr * (np.matmul(dx_2d_all, u_corr) + np.matmul(dy_2d_all, v_corr)) \
-            - get_brinkman_penalization_temperature(particle, eta, n_boundary, n_total, T, T_obs) \
-            + np.matmul((dxx_2d_all.T * k).T, T) \
-            + np.matmul((dyy_2d_all.T * k).T, T)
+            - get_brinkman_penalization_temperature(particle, eta_T, n_boundary, n_total, T, T_obs)
             
     T_corr = np.linalg.solve(LHS_T, RHS_T)    
     T_corr[:n_boundary] = T_bound
@@ -404,4 +406,4 @@ while(t < t_end):
     if i % 10==0:
         np.savez('File' + str(i/10) + '.npz', particle.x,particle.y,u,v,p,T,rho)
     i += 1
-    dt = 10**-5
+    dt = 10**-6

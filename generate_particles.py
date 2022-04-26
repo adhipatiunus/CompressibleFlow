@@ -423,7 +423,7 @@ def generate_particle_bump(x_min, x_max, y_min, y_max, sigma):
     
     x_center = (x_min + x_max) / 2
     y_center = -x_center
-    R = x_center + 0.1
+    R = x_center + 0.5
     
     bound_west = x_min + 3 * h
     bound_east = x_max - 3 * h
@@ -449,7 +449,7 @@ def generate_particle_bump(x_min, x_max, y_min, y_max, sigma):
     particle.diameter = np.concatenate((particle.diameter, sp))
     
     n_bump = len(particle.x)
-    """
+    
     x = np.linspace(bound_west, bound_east, nx - 6)
     y = np.linspace(bound_south, bound_north, ny - 4)
     
@@ -465,7 +465,7 @@ def generate_particle_bump(x_min, x_max, y_min, y_max, sigma):
     particle.x = np.concatenate((particle.x, node_x))
     particle.y = np.concatenate((particle.y, node_y))
     particle.diameter = np.concatenate((particle.diameter, sp))
-    """
+    
     N = len(particle.x)
     particle.index = np.arange(0, N)
     particle.boundary = np.full(N, False)

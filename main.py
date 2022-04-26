@@ -53,13 +53,9 @@ EtaDxAll, EtaDyAll, EtaDxxAll, EtaDxyAll, EtaDyyAll = LSMPS(particle, R_e2, 'all
 #%%
 
 dx_2d_all = EtaDxAll.copy()
-
 dy_2d_all = EtaDxAll.copy()
-
 dxx_2d_all = EtaDxxAll.copy()
-
 dxy_2d_all = EtaDxyAll.copy()
-
 dyy_2d_all = EtaDyyAll.copy()
 
 n_total = N
@@ -138,13 +134,13 @@ dt = 10**-5
 
 # Matrix A
 A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-    + (dx_2d_all.T * (rho * u)).T \
-    + (dy_2d_all.T * (rho * v)).T \
-    - 4.0 / 3.0 * (dxx_2d_all.T * mu).T \
-    - (dyy_2d_all.T * mu).T
+    + np.multiply(dx_2d_all, rho * u)
+    + np.multiply(dy_2d_all, rho * v)
+    - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu)
+    - np.multiply(dyy_2d_all, mu)
     
 # Matrix B
-B = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
+B = - 1.0 / 3.0 * np.multiply(dxy_2d_all, mu)
 
 # Matrix C
 C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
@@ -152,14 +148,14 @@ C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
     - get_brinkman_penalization(particle, eta, omega, n_boundary, n_total, u)
 
 # Matrix D
-D = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
+D = - 1.0 / 3.0 * np.multiply(dxy_2d_all, mu)
 
 # Matrix D
 E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-    + (dx_2d_all.T * (rho * u)).T \
-    + (dy_2d_all.T * (rho * v)).T \
-    - 4.0 / 3.0 * (dyy_2d_all.T * mu).T \
-    - (dxx_2d_all.T * mu).T
+    + np.multiply(dx_2d_all, rho * u)
+    + np.multiply(dy_2d_all, rho * v)
+    - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu)
+    - np.multiply(dxx_2d_all, mu)
     
 F = 2 * (rho * v) / dt - (rho_prev * v_prev) / (2 * dt) \
     - np.matmul(dy_2d_all, p) \
@@ -185,8 +181,8 @@ dm = 3 * rho / (2 * dt) - 2 * rho / dt + rho_prev / (2 * dt) \
 C_rho = 1 / (R * T)
         
 LHS_pc = 3 * C_rho * np.eye(n_total) / (2 * dt) \
-            + (dx_2d_all.T * (C_rho * u_pred)).T \
-            + (dy_2d_all.T * (C_rho * v_pred)).T \
+            + np.multiply(dx_2d_all, C_rho * u_pred) \
+            + np.multiply(dy_2d_all, C_rho * v_pred) \
             - 2 * dt / 3 * (dxx_2d_all + dyy_2d_all)
 
 p_change = np.linalg.solve(LHS_pc, -dm)
@@ -213,19 +209,19 @@ p_corr[:n_boundary] = p_bound
 rho_pred[:n_boundary] = rho_bound
 
 LHS_T = 3 *  (np.eye(n_total).T * (rho_pred * C_v)).T / (2 * dt) \
-        + (dx_2d_all.T * (rho_pred * C_v * u_corr)).T \
-        + (dy_2d_all.T * (rho_pred * C_v * v_corr)).T \
-        - (dxx_2d_all.T * k).T \
-        - (dyy_2d_all.T * k).T
+        + np.multiply(dx_2d_all, rho_pred * C_v * u_corr) \
+        + np.multiply(dy_2d_all, rho_pred * C_v * v_corr) \
+        - np.multiply(dxx_2d_all, k) \ 
+        - np.multiply(dyy_2d_all, k)
         
-tau_xx = 2.0 / 3.0 * (2 * np.matmul((dx_2d_all.T * mu).T, u_corr)
-                      - np.matmul((dy_2d_all.T * mu).T, v_corr))
+tau_xx = 2.0 / 3.0 * (2 * np.multiply(dx_2d_all, mu * u_corr) \
+                      - np.multiply(dy_2d_all, mu * v_corr)
 
-tau_xy = np.matmul((dx_2d_all.T * mu).T, u_corr) \
-            + np.matmul((dx_2d_all.T * mu).T, v_corr)
+tau_xy = np.multiply(dy_2d_all, mu * u_corr) \
+        + np.multiply(dx_2d_all, mu * v_corr)
             
-tau_yy = 2.0 / 3.0 * (2 * np.matmul((dy_2d_all.T * mu).T, v_corr)
-                      - np.matmul((dx_2d_all.T * mu).T, u_corr))
+tau_yy = 2.0 / 3.0 * (2 * np.multiply(dy_2d_all, mu * v_corr) \
+                      - np.multiply(dx_2d_all, mu * u_corr)
         
 RHS_T = 2 * rho_pred * C_v * T / dt \
         - rho_pred * C_v * T_prev / (2 * dt) \
@@ -260,13 +256,13 @@ while(t < t_end):
     print('Simulating, t = ' + str(t))
     # Matrix A
     A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-        + (dx_2d_all.T * (rho * u)).T \
-        + (dy_2d_all.T * (rho * v)).T \
-        - 4.0 / 3.0 * (dxx_2d_all.T * mu).T \
-        - (dyy_2d_all.T * mu).T
+        + np.multiply(dx_2d_all, rho * u)
+        + np.multiply(dy_2d_all, rho * v)
+        - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu)
+        - np.multiply(dyy_2d_all, mu)
         
     # Matrix B
-    B = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
+    B = - 1.0 / 3.0 * np.multiply(dxy_2d_all, mu)
 
     # Matrix C
     C = 2 * (rho * u) / dt - (rho_prev * u_prev) / (2 * dt) \
@@ -274,14 +270,14 @@ while(t < t_end):
         - get_brinkman_penalization(particle, eta, omega, n_boundary, n_total, u)
 
     # Matrix D
-    D = - 1.0 / 3.0 * (dxy_2d_all.T * mu).T
+    D = - 1.0 / 3.0 * np.multiply(dxy_2d_all, mu)
 
     # Matrix D
     E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-        + (dx_2d_all.T * (rho * u)).T \
-        + (dy_2d_all.T * (rho * v)).T \
-        - 4.0 / 3.0 * (dyy_2d_all.T * mu).T \
-        - (dxx_2d_all.T * mu).T
+        + np.multiply(dx_2d_all, rho * u)
+        + np.multiply(dy_2d_all, rho * v)
+        - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu)
+        - np.multiply(dxx_2d_all, mu)
         
     F = 2 * (rho * v) / dt - (rho_prev * v_prev) / (2 * dt) \
         - np.matmul(dy_2d_all, p) \
@@ -307,8 +303,8 @@ while(t < t_end):
     C_rho = 1 / (R * T)
             
     LHS_pc = 3 * C_rho * np.eye(n_total) / (2 * dt) \
-                + (dx_2d_all.T * (C_rho * u_pred)).T \
-                + (dy_2d_all.T * (C_rho * v_pred)).T \
+                + np.multiply(dx_2d_all, C_rho * u_pred) \
+                + np.multiply(dy_2d_all, C_rho * v_pred) \
                 - 2 * dt / 3 * (dxx_2d_all + dyy_2d_all)
 
     p_change = np.linalg.solve(LHS_pc, -dm)
@@ -330,25 +326,24 @@ while(t < t_end):
 
     rho_pred = rho + rho_change
     p_corr = p + p_change
-    
+
     p_corr[:n_boundary] = p_bound
     rho_pred[:n_boundary] = rho_bound
 
-    LHS_T = 3 * (np.eye(n_total).T * (rho_pred * C_v)).T / (2 * dt) \
-            + (dx_2d_all.T * (rho_pred * C_v * u_corr)).T \
-            + (dy_2d_all.T * (rho_pred * C_v * v_corr)).T \
-            - (dxx_2d_all.T * k).T \
-            - (dyy_2d_all.T * k).T
-
+    LHS_T = 3 *  (np.eye(n_total).T * (rho_pred * C_v)).T / (2 * dt) \
+            + np.multiply(dx_2d_all, rho_pred * C_v * u_corr) \
+            + np.multiply(dy_2d_all, rho_pred * C_v * v_corr) \
+            - np.multiply(dxx_2d_all, k) \ 
+            - np.multiply(dyy_2d_all, k)
             
-    tau_xx = 2.0 / 3.0 * (2 * np.matmul((dx_2d_all.T * mu).T, u_corr)
-            - np.matmul((dy_2d_all.T * mu).T, v_corr))
+    tau_xx = 2.0 / 3.0 * (2 * np.multiply(dx_2d_all, mu * u_corr) \
+                          - np.multiply(dy_2d_all, mu * v_corr)
 
-    tau_xy = np.matmul((dy_2d_all.T * mu).T, u_corr) \
-            + np.matmul((dx_2d_all.T * mu).T, v_corr)
+    tau_xy = np.multiply(dy_2d_all, mu * u_corr) \
+            + np.multiply(dx_2d_all, mu * v_corr)
                 
-    tau_yy = 2.0 / 3.0 * (2 * np.matmul((dy_2d_all.T * mu).T, v_corr)
-            - np.matmul((dx_2d_all.T * mu).T, u_corr))
+    tau_yy = 2.0 / 3.0 * (2 * np.multiply(dy_2d_all, mu * v_corr) \
+                          - np.multiply(dx_2d_all, mu * u_corr)
             
     RHS_T = 2 * rho_pred * C_v * T / dt \
             - rho_pred * C_v * T_prev / (2 * dt) \

@@ -134,9 +134,9 @@ dt = 10**-5
 
 # Matrix A
 A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-    + np.multiply(dx_2d_all, rho * u)
-    + np.multiply(dy_2d_all, rho * v)
-    - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu)
+    + np.multiply(dx_2d_all, rho * u) \
+    + np.multiply(dy_2d_all, rho * v) \
+    - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu) \
     - np.multiply(dyy_2d_all, mu)
     
 # Matrix B
@@ -152,9 +152,9 @@ D = - 1.0 / 3.0 * np.multiply(dxy_2d_all, mu)
 
 # Matrix D
 E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-    + np.multiply(dx_2d_all, rho * u)
-    + np.multiply(dy_2d_all, rho * v)
-    - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu)
+    + np.multiply(dx_2d_all, rho * u) \
+    + np.multiply(dy_2d_all, rho * v) \
+    - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu) \
     - np.multiply(dxx_2d_all, mu)
     
 F = 2 * (rho * v) / dt - (rho_prev * v_prev) / (2 * dt) \
@@ -211,17 +211,16 @@ rho_pred[:n_boundary] = rho_bound
 LHS_T = 3 *  (np.eye(n_total).T * (rho_pred * C_v)).T / (2 * dt) \
         + np.multiply(dx_2d_all, rho_pred * C_v * u_corr) \
         + np.multiply(dy_2d_all, rho_pred * C_v * v_corr) \
-        - np.multiply(dxx_2d_all, k) \ 
-        - np.multiply(dyy_2d_all, k)
+        - np.multiply(dxx_2d_all, k) - np.multiply(dyy_2d_all, k)
         
 tau_xx = 2.0 / 3.0 * (2 * np.multiply(dx_2d_all, mu * u_corr) \
-                      - np.multiply(dy_2d_all, mu * v_corr)
+                      - np.multiply(dy_2d_all, mu * v_corr))
 
 tau_xy = np.multiply(dy_2d_all, mu * u_corr) \
         + np.multiply(dx_2d_all, mu * v_corr)
             
 tau_yy = 2.0 / 3.0 * (2 * np.multiply(dy_2d_all, mu * v_corr) \
-                      - np.multiply(dx_2d_all, mu * u_corr)
+                      - np.multiply(dx_2d_all, mu * u_corr))
         
 RHS_T = 2 * rho_pred * C_v * T / dt \
         - rho_pred * C_v * T_prev / (2 * dt) \
@@ -256,9 +255,9 @@ while(t < t_end):
     print('Simulating, t = ' + str(t))
     # Matrix A
     A = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-        + np.multiply(dx_2d_all, rho * u)
-        + np.multiply(dy_2d_all, rho * v)
-        - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu)
+        + np.multiply(dx_2d_all, rho * u) \
+        + np.multiply(dy_2d_all, rho * v) \
+        - 4.0 / 3.0 * np.multiply(dxx_2d_all, mu) \
         - np.multiply(dyy_2d_all, mu)
         
     # Matrix B
@@ -274,9 +273,9 @@ while(t < t_end):
 
     # Matrix D
     E = 3.0 * (np.eye(n_total).T * rho).T / (2 * dt) \
-        + np.multiply(dx_2d_all, rho * u)
-        + np.multiply(dy_2d_all, rho * v)
-        - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu)
+        + np.multiply(dx_2d_all, rho * u) \
+        + np.multiply(dy_2d_all, rho * v) \
+        - 4.0 / 3.0 * np.multiply(dyy_2d_all, mu) \
         - np.multiply(dxx_2d_all, mu)
         
     F = 2 * (rho * v) / dt - (rho_prev * v_prev) / (2 * dt) \
@@ -333,17 +332,16 @@ while(t < t_end):
     LHS_T = 3 *  (np.eye(n_total).T * (rho_pred * C_v)).T / (2 * dt) \
             + np.multiply(dx_2d_all, rho_pred * C_v * u_corr) \
             + np.multiply(dy_2d_all, rho_pred * C_v * v_corr) \
-            - np.multiply(dxx_2d_all, k) \ 
-            - np.multiply(dyy_2d_all, k)
+            - np.multiply(dxx_2d_all, k) - np.multiply(dyy_2d_all, k)
             
     tau_xx = 2.0 / 3.0 * (2 * np.multiply(dx_2d_all, mu * u_corr) \
-                          - np.multiply(dy_2d_all, mu * v_corr)
+                          - np.multiply(dy_2d_all, mu * v_corr))
 
     tau_xy = np.multiply(dy_2d_all, mu * u_corr) \
             + np.multiply(dx_2d_all, mu * v_corr)
                 
     tau_yy = 2.0 / 3.0 * (2 * np.multiply(dy_2d_all, mu * v_corr) \
-                          - np.multiply(dx_2d_all, mu * u_corr)
+                          - np.multiply(dx_2d_all, mu * u_corr))
             
     RHS_T = 2 * rho_pred * C_v * T / dt \
             - rho_pred * C_v * T_prev / (2 * dt) \
